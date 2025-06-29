@@ -156,6 +156,7 @@ type Column struct {
 func (c *CreateTable) Convert() *Table {
 	var ret Table
 	ret.Name = onlyTableName(c.Name)
+	primaryKeyExists := checkIfPrimaryKeyExists(c.Constraints)
 	for _, e := range c.Columns {
 		definition := e.ColumnDefinition
 		var data Column
@@ -163,6 +164,10 @@ func (c *CreateTable) Convert() *Table {
 		if definition != nil {
 			data.DataType = definition.DataType
 			data.Constraint = definition.ColumnConstraint
+
+			if definition.ColumnConstraint != nil && !primaryKeyExists && definition.ColumnConstraint.Primary {
+				c.Constraints = append(c.Constraints, &TableConstraint{ColumnPrimaryKey: []string{e.Name}})
+			}
 		}
 		ret.Columns = append(ret.Columns, &data)
 	}
