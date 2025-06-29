@@ -34,3 +34,81 @@ func Test_onlyTableName(t *testing.T) {
 		})
 	}
 }
+
+func Test_checkIfPrimaryKeyExists(t *testing.T) {
+	type args struct {
+		constraints []*TableConstraint
+	}
+
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{
+			name: "No constraints (nil slice)",
+			args: args{
+				constraints: nil,
+			},
+			want: false,
+		},
+		{
+			name: "Empty constraints slice",
+			args: args{
+				constraints: []*TableConstraint{},
+			},
+			want: false,
+		},
+		{
+			name: "One constraint without primary key",
+			args: args{
+				constraints: []*TableConstraint{
+					{
+						ColumnPrimaryKey: []string{},
+					},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "Multiple constraints, none with primary key",
+			args: args{
+				constraints: []*TableConstraint{
+					{ColumnPrimaryKey: []string{}},
+					{ColumnPrimaryKey: []string{}},
+				},
+			},
+			want: false,
+		},
+		{
+			name: "One constraint with primary key",
+			args: args{
+				constraints: []*TableConstraint{
+					{
+						ColumnPrimaryKey: []string{"id"},
+					},
+				},
+			},
+			want: true,
+		},
+		{
+			name: "Multiple constraints, one with primary key",
+			args: args{
+				constraints: []*TableConstraint{
+					{ColumnPrimaryKey: []string{}},
+					{ColumnPrimaryKey: []string{"user_id"}},
+					{ColumnPrimaryKey: []string{}},
+				},
+			},
+			want: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := checkIfPrimaryKeyExists(tt.args.constraints); got != tt.want {
+				t.Errorf("checkIfPrimaryKeyExists() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

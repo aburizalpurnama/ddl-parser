@@ -177,3 +177,13 @@ func onlyTableName(name string) string {
 	ss := strings.Split(name, "`.`")
 	return ss[len(ss)-1]
 }
+
+func checkIfPrimaryKeyExists(constraints []*TableConstraint) bool {
+	for _, constraint := range constraints {
+		if len(constraint.ColumnPrimaryKey) > 0 {
+			return true
+		}
+	}
+
+	return false
+}
